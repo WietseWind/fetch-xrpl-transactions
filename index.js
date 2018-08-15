@@ -26,7 +26,7 @@ new Client(XRPLNodeUrl).then(Connection => {
     }
 
     const run = (ledger_index) => {
-        fetchLedgerTransactions(ledger_index).then(Result => {
+        return fetchLedgerTransactions(ledger_index).then(Result => {
             let txCount = Result.transactions.length
             console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${Result.ledger_index}: `, txCount > 0 ? txCount : '-')
             if (txCount > 0) {
@@ -50,7 +50,7 @@ new Client(XRPLNodeUrl).then(Connection => {
             if (retryTimeout > 5000) retryTimeout = 5000
             console.log(`Oops... Retry in ${retryTimeout / 1000} sec.`)
             setTimeout(() => {
-                run(ledger_index)
+                return run(ledger_index)
             }, retryTimeout)
         })
     }
