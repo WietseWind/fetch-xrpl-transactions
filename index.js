@@ -1,11 +1,12 @@
+const MongoClient = require('mongodb').MongoClient
 const Client = require('rippled-ws-client')
+const XRPLNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
+const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32750 : parseInt(process.env.LEDGER)
 
-const storeTransaction = (Tx) => {
-    // Do something, eg. Mongo?
-    return true
-}
+new Client(XRPLNodeUrl).then(Connection => {
+    console.log('Connected to the XRPL')
+    let MongoCollection
 
-new Client('wss://rippled.xrptipbot.com').then(Connection => {
     const fetchLedgerTransactions = (ledger_index) => {
         return new Promise((resolve, reject) => {
             Connection.send({
@@ -22,19 +23,32 @@ new Client('wss://rippled.xrptipbot.com').then(Connection => {
         })
     }
 
-    const run = (start_at_ledger) => {
-        fetchLedgerTransactions(start_at_ledger).then(Result => {
+    const run = (ledger_index) => {
+        fetchLedgerTransactions(ledger_index).then(Result => {
             let txCount = Result.transactions.length
             console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${Result.ledger_index}: `, txCount > 0 ? txCount : '-')
             if (txCount > 0) {
-                // Or insertMany, send the entire set to eg. mongo
-                Result.transactions.forEach(storeTransaction)
+                MongoCollection.insertMany(Result.transactions, (err, res) => {
+                    if (err) {
+                        console.error(err)
+                        process.exit(1)
+                    }
+                    console.log(`${res.insertedCount} documents inserted`)           
+                })
             }
-            // Todo: insert Result.transactions in somedb.
-            run(start_at_ledger + 1)
+            run(ledger_index + 1)
         })
     }
 
-    // run(32750) // First ledger
-    run(20000000)
+    MongoClient.connect('mongodb://mongo:27017/xrpl', { useNewUrlParser: true }, (err, MongoDb) => {
+        console.log('Connected to MongoDB')
+        
+        if (err) {
+            console.error(err)
+            process.exit(1)
+        }
+        
+        MongoCollection = MongoDb.db('xrpl').collection('transactions')
+        run(StartLedger)
+    })
 })

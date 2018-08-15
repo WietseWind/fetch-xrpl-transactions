@@ -1,0 +1,31 @@
+version: '2.1'
+
+services:
+  fetch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: xrpl/ledgerfetch
+    container_name: xrplfetch
+    command: npm run start
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      LEDGER: 32570
+      NODE: wss://rippled.xrptipbot.com
+    links:
+      - mongo
+  mongo:
+    image: mongo
+    restart: always
+    container_name: xrplfetchdb
+    volumes:
+      - ./db:/data/db
+    ports:
+      - 21337:27017
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/xrpl
+      interval: 10s
+      timeout: 10s
+      retries: 10
