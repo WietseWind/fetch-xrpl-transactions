@@ -7,6 +7,7 @@ const MongoServer = typeof process.env.MONGO === 'undefined' ? 'mongodb://mongo:
 new Client(XRPLNodeUrl).then(Connection => {
     console.log('Connected to the XRPL')
     let MongoCollection
+    let retryTimeout = 0
 
     const fetchLedgerTransactions = (ledger_index) => {
         return new Promise((resolve, reject) => {
@@ -42,7 +43,15 @@ new Client(XRPLNodeUrl).then(Connection => {
                     console.log(`${res.insertedCount} documents inserted`)           
                 })
             }
+            retryTimeout = 0
             run(ledger_index + 1)
+        }).catch(() => {
+            retryTimeout += 500
+            if (retryTimeout > 5000) retryTimeout = 5000
+            console.log(`Oops... Retry in ${retryTimeout / 1000} sec.`)
+            setTimeout(() => {
+                run(ledger_index)
+            }, retryTimeout)
         })
     }
 
