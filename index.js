@@ -2,6 +2,7 @@ const MongoClient = require('mongodb').MongoClient
 const Client = require('rippled-ws-client')
 const XRPLNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
 const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32750 : parseInt(process.env.LEDGER)
+const MongoServer = typeof process.env.MONGO === 'undefined' ? 'mongodb://mongo:27017/xrpl' : process.env.MONGO.trim()
 
 new Client(XRPLNodeUrl).then(Connection => {
     console.log('Connected to the XRPL')
@@ -45,7 +46,7 @@ new Client(XRPLNodeUrl).then(Connection => {
         })
     }
 
-    MongoClient.connect('mongodb://mongo:27017/xrpl', { useNewUrlParser: true }, (err, MongoDb) => {
+    MongoClient.connect(MongoServer, { useNewUrlParser: true }, (err, MongoDb) => {
         console.log('Connected to MongoDB')
         
         if (err) {
