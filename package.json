@@ -1,5 +1,29 @@
 {
+  "name": "fetch-xrpl-transactions",
+  "version": "0.9.0",
+  "description": "Fetch XRPL transactions and store in MongoDB",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WietseWind/fetch-xrpl-transactions.git"
+  },
+  "keywords": [
+    "xrp",
+    "xrpl",
+    "transactions",
+    "mongo"
+  ],
+  "author": "WietseWind",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WietseWind/fetch-xrpl-transactions/issues"
+  },
+  "homepage": "https://github.com/WietseWind/fetch-xrpl-transactions",
   "dependencies": {
+    "mongodb": "^3.1.3",
     "rippled-ws-client": "^0.1.1"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
