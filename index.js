@@ -11,7 +11,7 @@ new Client(XRPLNodeUrl).then(Connection => {
 
     const fetchLedgerTransactions = (ledger_index) => {
         return new Promise((resolve, reject) => {
-            Connection.send({
+            return Connection.send({
                 command: 'ledger',
                 ledger_index: parseInt(ledger_index),
                 transactions: true,
@@ -21,6 +21,7 @@ new Client(XRPLNodeUrl).then(Connection => {
                     ledger_index: ledger_index,
                     transactions: Result.ledger.transactions
                 })
+                return
             }).catch(reject)
         })
     }
@@ -44,7 +45,7 @@ new Client(XRPLNodeUrl).then(Connection => {
                 })
             }
             retryTimeout = 0
-            run(ledger_index + 1)
+            return run(ledger_index + 1)
         }).catch(() => {
             retryTimeout += 500
             if (retryTimeout > 5000) retryTimeout = 5000
