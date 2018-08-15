@@ -28,7 +28,12 @@ new Client(XRPLNodeUrl).then(Connection => {
             let txCount = Result.transactions.length
             console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${Result.ledger_index}: `, txCount > 0 ? txCount : '-')
             if (txCount > 0) {
-                MongoCollection.insertMany(Result.transactions, (err, res) => {
+                MongoCollection.insertMany(Result.transactions.map(Tx => {
+                    // Add the ledger index to the virtual key `__ledgerIndex`
+                    return Object.assign(Tx, {
+                        __ledgerIndex: Result.ledger_index
+                    })
+                }), (err, res) => {
                     if (err) {
                         console.error(err)
                         process.exit(1)
