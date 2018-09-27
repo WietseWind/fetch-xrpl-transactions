@@ -134,10 +134,14 @@ new Client(XRPLNodeUrl).then(Connection => {
             }
           })
       }
-      
+
       retryTimeout = 0
       
       // return // If only one
+      if (Stopped) {
+        return
+      }
+
       return run(ledger_index + 1)
     }).catch(e => {
       console.log(e)
@@ -152,8 +156,29 @@ new Client(XRPLNodeUrl).then(Connection => {
     })
   }
 
-  run(StartLedger)
-})
+  console.log(`Starting at ledger [ ${StartLedger} ], \n  Checking last ledger in BigQuery...`)
+
+  bigquery.query({
+    query: `SELECT 
+              COUNT(1) as TxCount,
+              MIN(LedgerIndex) as MinLedger,
+              MAX(LedgerIndex) as MaxLedger,
+              COUNT(DISTINCT LedgerIndex) as LedgersWithTxCount
+            FROM 
+              xrpledgerdata.fullhistory.transactions`,
+    useLegacySql: false, // Use standard SQL syntax for queries.
+  }).then(r => {
+    if (r[0][0].MaxLedger > StartLedger) {
+      console.log(`BigQuery History at ledger [ ${r[0][0].MaxLedger} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${r[0][0].MaxLedger+1}\n\n`)
+      run(r[0][0].MaxLedger + 1)
+    } else{
+      run(StartLedger)
+    }
+  }).catch(e => {
+    console.log('Google BigQuery Error', e)
+    process.exit(1)
+  })
+
   process.on('SIGINT', function() {
     console.log(`\nGracefully shutting down from SIGINT (Ctrl+C)\n -- Wait for remaining BigQuery inserts and XRPL Connection close...`);
   
