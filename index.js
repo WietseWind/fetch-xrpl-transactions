@@ -10,6 +10,9 @@ const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt
 console.log('Fetch XRPL transactions into Google BigQuery')
   
 new Client(XRPLNodeUrl).then(Connection => {
+  let Stopped = false
+  let LastLedger = 0
+
   console.log('Connected to the XRPL')
   let retryTimeout = 0
 
@@ -115,6 +118,7 @@ new Client(XRPLNodeUrl).then(Connection => {
         bigquery.dataset(datasetName).table(tableName).insert(Transactions)
           .then(r => {
             console.log(`Inserted rows`, r)
+            LastLedger = Result.ledger_index
             // process.exit(0)
           })
           .catch(err => {
@@ -149,4 +153,14 @@ new Client(XRPLNodeUrl).then(Connection => {
   }
 
   run(StartLedger)
+})
+  process.on('SIGINT', function() {
+    console.log(`\nGracefully shutting down from SIGINT (Ctrl+C)\n -- Wait for remaining BigQuery inserts and XRPL Connection close...`);
+  
+    Stopped = true  
+    Connection.close()
+    if (LastLedger > 0) {
+      console.log(`\nLast ledger: [ ${LastLedger} ]\n\nRun your next job with ENV: "LEDGER=${LastLedger+1}"\n\n`)
+    }
+  })
 })
