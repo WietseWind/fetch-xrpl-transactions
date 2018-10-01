@@ -90,9 +90,11 @@ new Client(XRPLNodeUrl).then(Connection => {
             Object.assign(_Tx, {
               Memos: Tx.Memos.map(m => {
                 let n = { Memo: {} }
-                if (typeof m.Memo.MemoData !== 'undefined') n.Memo.MemoData = m.Memo.MemoData
-                if (typeof m.Memo.MemoFormat !== 'undefined') n.Memo.MemoData = m.Memo.MemoFormat
-                if (typeof m.Memo.MemoType !== 'undefined') n.Memo.MemoData = m.Memo.MemoType
+                if (typeof m.Memo !== 'undefined') {
+                  if (typeof m.Memo.MemoData !== 'undefined') n.Memo.MemoData = m.Memo.MemoData
+                  if (typeof m.Memo.MemoFormat !== 'undefined') n.Memo.MemoData = m.Memo.MemoFormat
+                  if (typeof m.Memo.MemoType !== 'undefined') n.Memo.MemoData = m.Memo.MemoType
+                }
                 return n
               })
             })
