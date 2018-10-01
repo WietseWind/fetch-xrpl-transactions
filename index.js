@@ -88,7 +88,13 @@ new Client(XRPLNodeUrl).then(Connection => {
 
           if (typeof Tx.Memos !== 'undefined') {
             Object.assign(_Tx, {
-              Memos: Tx.Memos
+              Memos: Tx.Memos.map(m => {
+                let n = { Memo: {} }
+                if (typeof m.Memo.MemoData !== 'undefined') n.Memo.MemoData = m.Memo.MemoData
+                if (typeof m.Memo.MemoFormat !== 'undefined') n.Memo.MemoData = m.Memo.MemoFormat
+                if (typeof m.Memo.MemoType !== 'undefined') n.Memo.MemoData = m.Memo.MemoType
+                return n
+              })
             })
           }
 
@@ -125,7 +131,7 @@ new Client(XRPLNodeUrl).then(Connection => {
             if (err && err.name === 'PartialFailureError') {
               if (err.errors && err.errors.length > 0) {
                 console.log('Insert errors:')
-                err.errors.forEach(err => console.error(err))
+                err.errors.forEach(err => console.dir(err, { depth: null }))
                 process.exit(1)
               }
             } else {
@@ -141,7 +147,7 @@ new Client(XRPLNodeUrl).then(Connection => {
       if (Stopped) {
         return
       }
-
+      return // STOP
       return run(ledger_index + 1)
     }).catch(e => {
       console.log(e)
@@ -168,12 +174,12 @@ new Client(XRPLNodeUrl).then(Connection => {
               xrpledgerdata.fullhistory.transactions`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
-    if (r[0][0].MaxLedger > StartLedger) {
-      console.log(`BigQuery History at ledger [ ${r[0][0].MaxLedger} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${r[0][0].MaxLedger+1}\n\n`)
-      run(r[0][0].MaxLedger + 1)
-    } else{
+//    if (r[0][0].MaxLedger > StartLedger) {
+//      console.log(`BigQuery History at ledger [ ${r[0][0].MaxLedger} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${r[0][0].MaxLedger+1}\n\n`)
+//      run(r[0][0].MaxLedger + 1)
+//    } else{
       run(StartLedger)
-    }
+//    }
   }).catch(e => {
     console.log('Google BigQuery Error', e)
     process.exit(1)
