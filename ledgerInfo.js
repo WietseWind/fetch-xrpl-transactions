@@ -21,7 +21,7 @@ new Client(XRPLNodeUrl).then(Connection => {
       return Connection.send({
         command: 'ledger',
         ledger_index: parseInt(ledger_index),
-        transactions: true,
+        transactions: false,
         expand: false
       }).then(Result => {
         resolve(Result)
@@ -43,8 +43,7 @@ new Client(XRPLNodeUrl).then(Connection => {
         TotalCoins: parseInt(Result.ledger.totalCoins),
         ParentHash: Result.ledger.parent_hash,
         AccountHash: Result.ledger.account_hash,
-        TransactionHash: Result.ledger.transaction_hash,
-        Transactions: Result.ledger.transactions.length > 0 ? Result.ledger.transactions : null
+        TransactionHash: Result.ledger.transaction_hash
       }])
         .then(r => {
           console.log(`Inserted rows`, r)
@@ -157,20 +156,6 @@ new Client(XRPLNodeUrl).then(Connection => {
           type: "STRING",
           mode: "NULLABLE",
           description: ""
-        },
-        {
-          name: "Transactions",
-          type: "RECORD",
-          mode: "NULLABLE",
-          description: "",
-          fields: [
-            {
-              name: "Transaction",
-              type: "STRING",
-              mode: "NULLABLE",
-              description: ""
-            }  
-          ]
         }
       ]      
       bigquery.dataset(datasetName).createTable('ledgers', { schema: schema })
