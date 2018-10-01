@@ -143,11 +143,10 @@ new Client(XRPLNodeUrl).then(Connection => {
 
       retryTimeout = 0
       
-      // return // If only one
       if (Stopped) {
         return
       }
-      return // STOP
+
       return run(ledger_index + 1)
     }).catch(e => {
       console.log(e)
@@ -174,12 +173,12 @@ new Client(XRPLNodeUrl).then(Connection => {
               xrpledgerdata.fullhistory.transactions`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
-//    if (r[0][0].MaxLedger > StartLedger) {
-//      console.log(`BigQuery History at ledger [ ${r[0][0].MaxLedger} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${r[0][0].MaxLedger+1}\n\n`)
-//      run(r[0][0].MaxLedger + 1)
-//    } else{
+    if (r[0][0].MaxLedger > StartLedger) {
+      console.log(`BigQuery History at ledger [ ${r[0][0].MaxLedger} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${r[0][0].MaxLedger+1}\n\n`)
+      run(r[0][0].MaxLedger + 1)
+    } else{
       run(StartLedger)
-//    }
+    }
   }).catch(e => {
     console.log('Google BigQuery Error', e)
     process.exit(1)
