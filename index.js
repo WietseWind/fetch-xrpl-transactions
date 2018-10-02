@@ -29,7 +29,7 @@ new Client(XRPLNodeUrl).then(Connection => {
           resolve({ ledger_index: ledger_index, transactions: [] })
           return
         } else {
-          if (Result.ledger.transactions.length > 40) {
+          if (Result.ledger.transactions.length > 200) {
             // Lots of data. Per TX
             console.log(`<<< MANY TXS at ledger ${ledger_index}: [[ ${Result.ledger.transactions.length} ]], processing per-tx...`)
             let transactions = Result.ledger.transactions.map(Tx => {
