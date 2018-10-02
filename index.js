@@ -22,12 +22,49 @@ new Client(XRPLNodeUrl).then(Connection => {
         command: 'ledger',
         ledger_index: parseInt(ledger_index),
         transactions: true,
-        expand: true
-      }).then(Result => {
-        resolve({
-          ledger_index: ledger_index,
-          transactions: Result.ledger.transactions
-        })
+        expand: false
+      }, 10).then(Result => {
+        if (typeof Result.ledger.transactions === 'undefined' || Result.ledger.transactions.length === 0) {
+          // Do nothing
+          resolve({ ledger_index: ledger_index, transactions: [] })
+          return
+        } else {
+          if (Result.ledger.transactions.length > 10) {
+            // Lots of data. Per TX
+            console.log(`<<< MANY TXS at ledger ${ledger_index}: [[ ${Result.ledger.transactions.length} ]], processing per-tx...`)
+            let transactions = Result.ledger.transactions.map(Tx => {
+              return Connection.send({
+                command: 'tx',
+                transaction: Tx
+              }, 10)
+            })
+            Promise.all(transactions).then(r => {
+              let allTxs = r.filter(t => {
+                return typeof t.error === 'undefined' && typeof t.meta !== 'undefined' && typeof t.meta.TransactionResult !== 'undefined'
+              })
+              console.log('>>> ALL TXS FETCHED:', allTxs.length)
+              resolve({ ledger_index: ledger_index, transactions: allTxs.map(t => {
+                return Object.assign(t, {
+                  metaData: t.meta
+                })
+              }) })
+              return
+            })
+          } else {
+            // Fetch at once.
+            resolve(new Promise((resolve, reject) => {
+              Connection.send({
+                command: 'ledger',
+                ledger_index: parseInt(ledger_index),
+                transactions: true,
+                expand: true
+              }, 10).then(Result => {
+                resolve({ ledger_index: ledger_index, transactions: Result.ledger.transactions })
+                return
+              }).catch(reject)
+            }))
+          }
+        }
         return
       }).catch(reject)
     })
