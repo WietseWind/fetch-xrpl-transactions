@@ -14,7 +14,7 @@ new Client(XRPLNodeUrl).then(Connection => {
   let LastLedger = 0
 
   console.log('Connected to the XRPL')
-  let retryTimeout = 0
+  let retryTimeout = 60 * 60 * 12
 
   const fetchLedgerTransactions = (ledger_index) => {
     return new Promise((resolve, reject) => {
@@ -180,7 +180,7 @@ new Client(XRPLNodeUrl).then(Connection => {
           })
       }
 
-      retryTimeout = 0
+      // retryTimeout = 0
       
       if (Stopped) {
         return
@@ -191,12 +191,12 @@ new Client(XRPLNodeUrl).then(Connection => {
       console.log(e)
       process.exit(1)
 
-      retryTimeout += 500
-      if (retryTimeout > 5000) retryTimeout = 5000
+      // retryTimeout += 500
+      // if (retryTimeout > 5000) retryTimeout = 5000
       console.log(`Oops... Retry in ${retryTimeout / 1000} sec.`)
       setTimeout(() => {
         return run(ledger_index)
-      }, retryTimeout)
+      }, retryTimeout * 1000)
     })
   }
 
