@@ -32,6 +32,7 @@ const CurrencyFields = [
   'LimitAmount',
   'SendMin',
   'DeliverMin',
+  'BrokerFee',
 ]
 
 const TxTypeFields = [
@@ -79,6 +80,14 @@ const TxTypeFields = [
     ReferenceFeeUnits: "INTEGER",
     ReserveBase: "INTEGER",
     ReserveIncrement: "INTEGER",
+    TokenTaxon: "INTEGER",
+    URI: "STRING",
+    Issuer: "STRING",
+    TransferFee: "INTEGER",
+    TokenID: "STRING",
+    Destination: "STRING",
+    SellOffer: "STRING",
+    BuyOffer: "STRING",
   }
 ]
 
@@ -202,6 +211,12 @@ schema = [
         ]
      },
     ]
+  },
+  {
+    name: "TokenOffers",
+    type: "STRING",
+    mode: "REPEATED",
+    description: "TokenOffers",
   }
 ]
 
