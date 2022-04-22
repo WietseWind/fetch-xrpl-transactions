@@ -32,7 +32,7 @@ const CurrencyFields = [
   'LimitAmount',
   'SendMin',
   'DeliverMin',
-  'BrokerFee',
+  'NFTokenBrokerFee',
 ]
 
 const TxTypeFields = [
@@ -80,14 +80,14 @@ const TxTypeFields = [
     ReferenceFeeUnits: "INTEGER",
     ReserveBase: "INTEGER",
     ReserveIncrement: "INTEGER",
-    TokenTaxon: "INTEGER",
+    NFTokenTaxon: "INTEGER",
     URI: "STRING",
     Issuer: "STRING",
     TransferFee: "INTEGER",
-    TokenID: "STRING",
+    NFTokenID: "STRING",
     Destination: "STRING",
-    SellOffer: "STRING",
-    BuyOffer: "STRING",
+    NFTokenSellOffer: "STRING",
+    NFTokenBuyOffer: "STRING",
   }
 ]
 
@@ -213,10 +213,10 @@ schema = [
     ]
   },
   {
-    name: "TokenOffers",
+    name: "NFTokenOffers",
     type: "STRING",
     mode: "REPEATED",
-    description: "TokenOffers",
+    description: "NFTokenOffers",
   }
 ]
 
