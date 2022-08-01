@@ -164,6 +164,9 @@ new Client(XRPLNodeUrl).then(Connection => {
               })
             }
           })
+
+          // Special handling for timestamps
+          _Tx._InsertedAt = bigquery.timestamp(new Date())
           
           return _Tx
         })

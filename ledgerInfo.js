@@ -37,13 +37,14 @@ new Client(XRPLNodeUrl).then(Connection => {
       bigquery.dataset(datasetName).table('ledgers').insert([{
         LedgerIndex: parseInt(Result.ledger.ledger_index),
         hash: Result.ledger.hash,
-        CloseTime: new Date(Date.parse(Result.ledger.close_time_human)).toISOString().replace('T', ' ').replace(/[^0-9]+$/, ''),
+        CloseTime: bigquery.timestamp(new Date(Date.parse(Result.ledger.close_time_human)).toISOString().replace('T', ' ').replace(/[^0-9]+$/, '')),
         CloseTimeTimestamp: Result.ledger.close_time,
         CloseTimeHuman: Result.ledger.close_time_human,
         TotalCoins: parseInt(Result.ledger.totalCoins),
         ParentHash: Result.ledger.parent_hash,
         AccountHash: Result.ledger.account_hash,
-        TransactionHash: Result.ledger.transaction_hash
+        TransactionHash: Result.ledger.transaction_hash,
+        _InsertedAt: bigquery.timestamp(new Date()),
       }])
         .then(r => {
           console.log(`Inserted rows`, r)
@@ -117,7 +118,7 @@ new Client(XRPLNodeUrl).then(Connection => {
         },
         {
           name: "CloseTime",
-          type: "DATETIME",
+          type: "TIMESTAMP",
           mode: "NULLABLE",
           description: ""
         },
@@ -156,7 +157,13 @@ new Client(XRPLNodeUrl).then(Connection => {
           type: "STRING",
           mode: "NULLABLE",
           description: ""
-        }
+        },
+        {
+          name: "_InsertedAt",
+          type: "TIMESTAMP",
+          mode: "NULLABLE",
+          descriptpion: "When row was inserted",
+        },
       ]      
       bigquery.dataset(datasetName).createTable('ledgers', { schema: schema })
         .then(r => {

@@ -116,6 +116,12 @@ schema = [
     description: "metaData.DeliveredAmount"
   },
   {
+    name: "_InsertedAt",
+    type: "TIMESTAMP",
+    mode: "NULLABLE",
+    description: "When row was inserted",
+  },
+  {
     name: "Memos",
     type: "RECORD",
     mode: "REPEATED",
