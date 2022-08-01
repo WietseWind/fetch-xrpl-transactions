@@ -1,7 +1,3 @@
-const projectId = 'xrpledgerdata'
-const datasetName = 'fullhistory'
-const tableName = 'transactions'
-
 /**
  * BigQuery Schema;
  *  Type:
@@ -90,7 +86,7 @@ const TxTypeFields = [
   }
 ]
 
-schema = [
+const schema = [
   {
     name: "LedgerIndex",
     type: "INTEGER",
@@ -282,9 +278,6 @@ CurrencyFields.forEach(Field => {
 })
 
 module.exports = {
-  schema: schema,
-  projectId: projectId,
-  datasetName: datasetName,
-  tableName: tableName,
+  transactionSchema: schema,
   CurrencyFields: CurrencyFields
 }
