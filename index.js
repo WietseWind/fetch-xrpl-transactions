@@ -1,4 +1,10 @@
-const { schema, projectId, datasetName, tableName, CurrencyFields } = require('./schema')
+const {
+  schema,
+  projectId,
+  datasetName,
+  tableName,
+  CurrencyFields,
+} = require('./schema')
 
 const Client = require('rippled-ws-client')
 const BigQuery = require('@google-cloud/bigquery')
@@ -74,6 +80,7 @@ new Client(XRPLNodeUrl).then(Connection => {
     return fetchLedgerTransactions(ledger_index).then(Result => {
       let txCount = Result.transactions.length
       console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${Result.ledger_index}: `, txCount > 0 ? txCount : '-')
+
       if (txCount > 0) {
         let Transactions = Result.transactions.map(Tx => {
           let _Tx = {
@@ -135,6 +142,10 @@ new Client(XRPLNodeUrl).then(Connection => {
                 return n
               })
             })
+          }
+
+          if (Tx.NFTokenOffers != null) {
+            _Tx.NFTokenOffers = Tx.NFTokenOffers
           }
 
           CurrencyFields.forEach(CurrencyField => {
@@ -209,7 +220,7 @@ new Client(XRPLNodeUrl).then(Connection => {
               MAX(LedgerIndex) as MaxLedger,
               COUNT(DISTINCT LedgerIndex) as LedgersWithTxCount
             FROM 
-              xrpledgerdata.fullhistory.transactions`,
+              ${projectId}.${datasetName}.${tableName}`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
     if (r[0][0].MaxLedger > StartLedger) {

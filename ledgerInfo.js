@@ -89,7 +89,7 @@ new Client(XRPLNodeUrl).then(Connection => {
     query: `SELECT 
               MAX(LedgerIndex) as MaxLedger
             FROM 
-              xrpledgerdata.fullhistory.ledgers`,
+              ${projectId}.${datasetName}.ledgers`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
     if (r[0][0].MaxLedger > StartLedger) {

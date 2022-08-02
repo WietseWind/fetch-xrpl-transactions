@@ -85,7 +85,6 @@ const TxTypeFields = [
     Issuer: "STRING",
     TransferFee: "INTEGER",
     NFTokenID: "STRING",
-    Destination: "STRING",
     NFTokenSellOffer: "STRING",
     NFTokenBuyOffer: "STRING",
   }
@@ -96,7 +95,7 @@ schema = [
     name: "LedgerIndex",
     type: "INTEGER",
     mode: "NULLABLE",
-    description: ""
+    description: "XRPL ledger index"
   },
   {
     name: "TransactionResult",
