@@ -1,8 +1,14 @@
-const { schema, projectId, datasetName, tableName, CurrencyFields } = require('./schema')
+const {
+  PROJECT_ID,
+  DATASET_NAME,
+  TRANSACTION_TABLE_NAME,
+  transactionSchema,
+  CurrencyFields,
+} = require('./schema')
 
 const Client = require('rippled-ws-client')
 const BigQuery = require('@google-cloud/bigquery')
-const bigquery = new BigQuery({ projectId: projectId })
+const bigquery = new BigQuery({ projectId: PROJECT_ID })
 
 const XRPLNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
 const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt(process.env.LEDGER)
@@ -74,13 +80,14 @@ new Client(XRPLNodeUrl).then(Connection => {
     return fetchLedgerTransactions(ledger_index).then(Result => {
       let txCount = Result.transactions.length
       console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${Result.ledger_index}: `, txCount > 0 ? txCount : '-')
+
       if (txCount > 0) {
         let Transactions = Result.transactions.map(Tx => {
           let _Tx = {
             LedgerIndex: Result.ledger_index
           }
           // Auto mapping for 1:1 fields (non RECORD)
-          schema.forEach(SchemaNode => {
+          transactionSchema.forEach(SchemaNode => {
             if (typeof Tx[SchemaNode.description] !== 'undefined' 
                 && Tx[SchemaNode.description] !== null 
                 && typeof Tx[SchemaNode.description] !== 'object' 
@@ -137,6 +144,10 @@ new Client(XRPLNodeUrl).then(Connection => {
             })
           }
 
+          if (Tx.NFTokenOffers != null) {
+            _Tx.NFTokenOffers = Tx.NFTokenOffers
+          }
+
           CurrencyFields.forEach(CurrencyField => {
             if (typeof Tx[CurrencyField] === 'string') {
               Object.assign(_Tx, {
@@ -153,6 +164,9 @@ new Client(XRPLNodeUrl).then(Connection => {
               })
             }
           })
+
+          // Special handling for timestamps
+          _Tx._InsertedAt = bigquery.timestamp(new Date())
           
           return _Tx
         })
@@ -160,7 +174,7 @@ new Client(XRPLNodeUrl).then(Connection => {
         // console.dir(Transactions[0], { depth: null })
         // process.exit(1)
 
-        bigquery.dataset(datasetName).table(tableName).insert(Transactions)
+        bigquery.dataset(DATASET_NAME).table(TRANSACTION_TABLE_NAME).insert(Transactions)
           .then(r => {
             console.log(`Inserted rows`, r)
             LastLedger = Result.ledger_index
@@ -209,7 +223,7 @@ new Client(XRPLNodeUrl).then(Connection => {
               MAX(LedgerIndex) as MaxLedger,
               COUNT(DISTINCT LedgerIndex) as LedgersWithTxCount
             FROM 
-              xrpledgerdata.fullhistory.transactions`,
+              ${PROJECT_ID}.${DATASET_NAME}.${TRANSACTION_TABLE_NAME}`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
     if (r[0][0].MaxLedger > StartLedger) {

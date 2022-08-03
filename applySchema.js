@@ -1,13 +1,18 @@
-const { schema, projectId, datasetName, tableName, CurrencyFields } = require('./schema')
+const {
+  PROJECT_ID,
+  DATASET_NAME,
+  TRANSACTION_TABLE_NAME,
+  LEDGER_TABLE_NAME,
+  transactionSchema,
+  ledgerSchema,
+} = require('./schema')
 
 const BigQuery = require('@google-cloud/bigquery')
-const bigquery = new BigQuery({ projectId: projectId })
+const bigquery = new BigQuery({ projectId: PROJECT_ID })
 
-console.log(`Create table [ ${tableName} ] in dataset [ ${datasetName} ] @ Google BigQuery`)
-
-const createTable = async () => {
+const createTable = async (name, schema) => {
   return new Promise((resolve, reject) => {
-    bigquery.dataset(datasetName).createTable(tableName, { schema: schema })
+    bigquery.dataset(DATASET_NAME).createTable(name, { schema: schema })
       .then(r => {
         console.log(` -- BigQuery Table ${r[0].id} created`)
         resolve()
@@ -18,10 +23,10 @@ const createTable = async () => {
   })
 }
 
-const deleteTable = async () => {
+const deleteTable = async (name) => {
   return new Promise((resolve, reject) => {
-    bigquery.dataset(datasetName).table(tableName).delete().then(() => {
-      console.log(` -- BigQuery Table ${tableName} removed`)
+    bigquery.dataset(DATASET_NAME).table(name).delete().then(() => {
+      console.log(` -- BigQuery Table ${name} removed`)
       resolve()
     }).catch(e => {
       if (e.errors[0].reason === 'notFound') {
@@ -33,9 +38,18 @@ const deleteTable = async () => {
   })
 }
 
+const recreateTable = async (name, schema) => {
+  console.log(`Dropping and creating table [ ${name} ] in dataset [ ${DATASET_NAME} ] @ Google BigQuery`)
+
+  await deleteTable(name)
+  await createTable(name, schema)
+}
+
 (async () => {
-  await deleteTable()
-  await createTable()
+  await Promise.all([
+    recreateTable(TRANSACTION_TABLE_NAME, transactionSchema),
+    recreateTable(LEDGER_TABLE_NAME, ledgerSchema),
+  ])
 
   console.log(`Done\n`)
 })()

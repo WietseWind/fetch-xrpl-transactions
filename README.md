@@ -59,7 +59,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/[FILE_NAME].json"
 More information:
 https://cloud.google.com/docs/authentication/getting-started
 
-> Now modify `schema.js` (line 1-3) to point to your own projectId, dataset and table.
+> Now modify `schema/CONSTANTS.js` to point to your own projectId, dataset and table names.
 
 # Create schema
 

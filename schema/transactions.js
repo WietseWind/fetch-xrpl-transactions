@@ -1,7 +1,3 @@
-const projectId = 'xrpledgerdata'
-const datasetName = 'fullhistory'
-const tableName = 'transactions'
-
 /**
  * BigQuery Schema;
  *  Type:
@@ -85,18 +81,17 @@ const TxTypeFields = [
     Issuer: "STRING",
     TransferFee: "INTEGER",
     NFTokenID: "STRING",
-    Destination: "STRING",
     NFTokenSellOffer: "STRING",
     NFTokenBuyOffer: "STRING",
   }
 ]
 
-schema = [
+const schema = [
   {
     name: "LedgerIndex",
     type: "INTEGER",
     mode: "NULLABLE",
-    description: ""
+    description: "XRPL ledger index"
   },
   {
     name: "TransactionResult",
@@ -115,6 +110,12 @@ schema = [
     type: "INTEGER",
     mode: "NULLABLE",
     description: "metaData.DeliveredAmount"
+  },
+  {
+    name: "_InsertedAt",
+    type: "TIMESTAMP",
+    mode: "NULLABLE",
+    description: "When row was inserted",
   },
   {
     name: "Memos",
@@ -277,9 +278,6 @@ CurrencyFields.forEach(Field => {
 })
 
 module.exports = {
-  schema: schema,
-  projectId: projectId,
-  datasetName: datasetName,
-  tableName: tableName,
+  transactionSchema: schema,
   CurrencyFields: CurrencyFields
 }

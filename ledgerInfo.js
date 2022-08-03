@@ -1,8 +1,12 @@
-const { projectId, datasetName } = require('./schema')
+const {
+  PROJECT_ID,
+  DATASET_NAME,
+  LEDGER_TABLE_NAME,
+} = require('./schema')
 
 const Client = require('rippled-ws-client')
 const BigQuery = require('@google-cloud/bigquery')
-const bigquery = new BigQuery({ projectId: projectId })
+const bigquery = new BigQuery({ projectId: PROJECT_ID })
 
 const XRPLNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
 const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt(process.env.LEDGER)
@@ -34,16 +38,17 @@ new Client(XRPLNodeUrl).then(Connection => {
     return fetchLedger(ledger_index).then(Result => {
       console.log(`${Result.ledger_index}`)
       // console.log(Result)
-      bigquery.dataset(datasetName).table('ledgers').insert([{
+      bigquery.dataset(DATASET_NAME).table(LEDGER_TABLE_NAME).insert([{
         LedgerIndex: parseInt(Result.ledger.ledger_index),
         hash: Result.ledger.hash,
-        CloseTime: new Date(Date.parse(Result.ledger.close_time_human)).toISOString().replace('T', ' ').replace(/[^0-9]+$/, ''),
+        CloseTime: bigquery.timestamp(new Date(Date.parse(Result.ledger.close_time_human)).toISOString().replace('T', ' ').replace(/[^0-9]+$/, '')),
         CloseTimeTimestamp: Result.ledger.close_time,
         CloseTimeHuman: Result.ledger.close_time_human,
         TotalCoins: parseInt(Result.ledger.totalCoins),
         ParentHash: Result.ledger.parent_hash,
         AccountHash: Result.ledger.account_hash,
-        TransactionHash: Result.ledger.transaction_hash
+        TransactionHash: Result.ledger.transaction_hash,
+        _InsertedAt: bigquery.timestamp(new Date()),
       }])
         .then(r => {
           console.log(`Inserted rows`, r)
@@ -89,7 +94,7 @@ new Client(XRPLNodeUrl).then(Connection => {
     query: `SELECT 
               MAX(LedgerIndex) as MaxLedger
             FROM 
-              xrpledgerdata.fullhistory.ledgers`,
+              ${PROJECT_ID}.${DATASET_NAME}.${LEDGER_TABLE_NAME}`,
     useLegacySql: false, // Use standard SQL syntax for queries.
   }).then(r => {
     if (r[0][0].MaxLedger > StartLedger) {
@@ -99,74 +104,8 @@ new Client(XRPLNodeUrl).then(Connection => {
       run(StartLedger)
     }
   }).catch(e => {
-    if (e.message.match(/Not found: Table xrpledgerdata:fullhistory.ledgers was not found/)) {
-      console.log('>> Create table ...')
-
-      const schema = [
-        {
-          name: "LedgerIndex",
-          type: "INTEGER",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "hash",
-          type: "STRING",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "CloseTime",
-          type: "DATETIME",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "CloseTimeTimestamp",
-          type: "INTEGER",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "CloseTimeHuman",
-          type: "STRING",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "TotalCoins",
-          type: "INTEGER",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "ParentHash",
-          type: "STRING",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "AccountHash",
-          type: "STRING",
-          mode: "NULLABLE",
-          description: ""
-        },
-        {
-          name: "TransactionHash",
-          type: "STRING",
-          mode: "NULLABLE",
-          description: ""
-        }
-      ]      
-      bigquery.dataset(datasetName).createTable('ledgers', { schema: schema })
-        .then(r => {
-          console.log(` -- BigQuery Table ${r[0].id} created`)
-          process.exit(0)
-        })
-    } else {
-      console.log('Google BigQuery Error', e)
-      process.exit(1)
-    }
+    console.log('Google BigQuery Error', e)
+    process.exit(1)
   })
 
   process.on('SIGINT', function() {
