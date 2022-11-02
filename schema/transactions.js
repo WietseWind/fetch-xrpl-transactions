@@ -218,7 +218,13 @@ const schema = [
     type: "STRING",
     mode: "REPEATED",
     description: "NFTokenOffers",
-  }
+  },
+  {
+    name: "Metadata",
+    type: "JSON",
+    mode: "NULLABLE",
+    description: "Transaction metadata",
+  },
 ]
 
 CurrencyFields.forEach(Field => {
