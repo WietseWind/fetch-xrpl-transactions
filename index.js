@@ -148,6 +148,10 @@ new Client(XRPLNodeUrl).then(Connection => {
             _Tx.NFTokenOffers = Tx.NFTokenOffers
           }
 
+          if (Tx.metaData != null) {
+            _Tx.Metadata = JSON.stringify(Tx.metaData)
+          }
+
           CurrencyFields.forEach(CurrencyField => {
             if (typeof Tx[CurrencyField] === 'string') {
               Object.assign(_Tx, {
