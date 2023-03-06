@@ -4,7 +4,7 @@ const {
   LEDGER_TABLE_NAME,
 } = require('./schema')
 
-const Client = require('rippled-ws-client')
+const XrplClient = require('xrpl-client').XrplClient
 const BigQuery = require('@google-cloud/bigquery')
 const bigquery = new BigQuery({ projectId: PROJECT_ID })
 
@@ -12,8 +12,10 @@ const XRPLNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.c
 const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt(process.env.LEDGER)
 
 console.log('Fetch XRPL Ledger Info into Google BigQuery')
+
+const Client = new XrplClient(XRPLNodeUrl)
   
-new Client(XRPLNodeUrl).then(Connection => {
+Client.ready().then(Connection => {
   let Stopped = false
   let LastLedger = 0
 
