@@ -14,8 +14,18 @@ const StartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt
 console.log('Fetch XRPL Ledger Info into Google BigQuery')
 
 const Client = new XrplClient(XRPLNodeUrl)
+
+async function safeHalt() {
+  try {
+    await Client.close()
+  } catch(e) {
+    console.error('ERROR closing connection:', e)
+  } finally {
+    process.exit(1)
+  }
+}
   
-Client.ready().then(Connection => {
+Client.ready().then(() => {
   let Stopped = false
   let LastLedger = 0
 
@@ -24,7 +34,7 @@ Client.ready().then(Connection => {
 
   const fetchLedger = (ledger_index) => {
     return new Promise((resolve, reject) => {
-      return Connection.send({
+      return Client.send({
         command: 'ledger',
         ledger_index: parseInt(ledger_index),
         transactions: false,
@@ -39,7 +49,6 @@ Client.ready().then(Connection => {
   const run = (ledger_index) => {
     return fetchLedger(ledger_index).then(Result => {
       console.log(`${Result.ledger_index}`)
-      // console.log(Result)
       bigquery.dataset(DATASET_NAME).table(LEDGER_TABLE_NAME).insert([{
         LedgerIndex: parseInt(Result.ledger.ledger_index),
         hash: Result.ledger.hash,
@@ -55,38 +64,28 @@ Client.ready().then(Connection => {
         .then(r => {
           console.log(`Inserted rows`, r)
           LastLedger = Result.ledger_index
-          // process.exit(0)
         })
         .catch(err => {
           if (err && err.name === 'PartialFailureError') {
             if (err.errors && err.errors.length > 0) {
               console.log('Insert errors:')
               err.errors.forEach(err => console.dir(err, { depth: null }))
-              process.exit(1)
+              return safeHalt()
             }
           } else {
             console.error('ERROR:', err)
-            process.exit(1)
+            return safeHalt()
           }
         })
-
-//      retryTimeout = 0
       
       if (Stopped) {
-        return
+        return Client.close()
       }
 
       return run(ledger_index + 1)
     }).catch(e => {
       console.log(e)
-      process.exit(1)
-
-      // retryTimeout += 500
-//      if (retryTimeout > 5000) retryTimeout = 5000
-      console.log(`Oops... Retry in ${retryTimeout / 1000} sec.`)
-      setTimeout(() => {
-        return run(ledger_index)
-      }, retryTimeout * 1000)
+      return safeHalt()
     })
   }
 
@@ -107,14 +106,13 @@ Client.ready().then(Connection => {
     }
   }).catch(e => {
     console.log('Google BigQuery Error', e)
-    process.exit(1)
+    return safeHalt()
   })
 
   process.on('SIGINT', function() {
     console.log(`\nGracefully shutting down from SIGINT (Ctrl+C)\n -- Wait for remaining BigQuery inserts and XRPL Connection close...`);
   
     Stopped = true  
-    Connection.close()
     if (LastLedger > 0) {
       console.log(`\nLast ledger: [ ${LastLedger} ]\n\nRun your next job with ENV: "LEDGER=${LastLedger+1}"\n\n`)
     }
