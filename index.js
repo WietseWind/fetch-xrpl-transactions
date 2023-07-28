@@ -251,11 +251,12 @@ async function main() {
   process.exit(errored ? 1 : 0)
 }
 
-function onSigInt() {
-  console.log(`\nGracefully shutting down from SIGINT (Ctrl+C)\n -- Wait for remaining BigQuery inserts and XRPL Connection close...`);
+function onRequestStop() {
+  console.log(`\nGracefully shutting down\n -- Wait for remaining BigQuery inserts and XRPL Connection close...`);
   Stopped = true
 }
 
-process.on('SIGINT', onSigInt)
+process.on('SIGINT', onRequestStop)
+process.on('SIGTERM', onRequestStop)
 
 main().then()
