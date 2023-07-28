@@ -78,12 +78,6 @@ async function processLedger(client, lastLedger) {
 
 async function main() {
   console.log('Fetch XRPL Ledger Info into Google BigQuery')
-  const xrplNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
-  const client = new XrplClient(xrplNodeUrl)
-  await client.ready()
-  console.log('Connected to the XRPL')
-
-  let errored = false
 
   // Determine start ledger. lastLedger represents the last ledger that we
   // _have_ stored. So lastLedger + 1 is the next ledger we need. The
@@ -92,6 +86,7 @@ async function main() {
   let lastLedger = 0
   const cmdLineStartLedger = typeof process.env.LEDGER === 'undefined' ? 32570 : parseInt(process.env.LEDGER)
   const startLedgerDB = await getLastDBLedger()
+
   if (startLedgerDB >= cmdLineStartLedger) {
     console.log(`BigQuery History at ledger [ ${startLedgerDB} ], > StartLedger.\n  Forcing StartLedger at:\n  >>> ${startLedgerDB+1}\n\n`)
     lastLedger = startLedgerDB
@@ -100,6 +95,14 @@ async function main() {
     lastLedger = Math.max(cmdLineStartLedger - 1, 1)
   }
 
+  // Setup client
+  const xrplNodeUrl = typeof process.env.NODE === 'undefined' ? 'wss://s2.ripple.com' : process.env.NODE.trim()
+  const client = new XrplClient(xrplNodeUrl)
+  await client.ready()
+  console.log('Connected to the XRPL')
+
+  // Main loop
+  let errored = false
   while (!Stopped) {
     try {
       lastLedger = await processLedger(client, lastLedger)
@@ -110,6 +113,7 @@ async function main() {
     }
   }
 
+  // Cleanup
   console.log('Disconnecting from ledger')
   await client.close()
   console.log('Disconnected')
