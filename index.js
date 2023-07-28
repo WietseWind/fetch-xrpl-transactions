@@ -52,7 +52,7 @@ async function fetchLedgerTransactions(client, ledgerIndex) {
       transactions: true,
       expand: true,
     }, 10)
-    return { ledger_index: ledgerIndex, transactions: txResults }
+    return { ledger_index: ledgerIndex, transactions: txResults.ledger.transactions }
   }
 
   console.log(`<<< MANY TXS at ledger ${ledgerIndex}: [[ ${result.ledger.transactions.length} ]], processing per-tx...`)
@@ -90,7 +90,7 @@ async function insertIntoDB(txs) {
   }
 }
 
-function formatTxForDB(tx) {
+function formatTxForDB(Tx) {
   const _Tx = {}
 
   // Auto mapping for 1:1 fields (non RECORD)
