@@ -6,7 +6,12 @@ const {
 
 const XrplClient = require('xrpl-client').XrplClient
 const BigQuery = require('@google-cloud/bigquery')
+
 const bigquery = new BigQuery({ projectId: PROJECT_ID })
+
+const xrplRequestOptions = {
+  timeoutSeconds: 10,
+}
 
 let Stopped = false
 
@@ -17,7 +22,7 @@ async function fetchLedger(client, ledgerIndex) {
       ledger_index: parseInt(ledgerIndex),
       transactions: false,
       expand: false,
-    })
+    }, xrplRequestOptions)
   } catch(e) {
     console.error('Ledger fetching error', e)
     throw e

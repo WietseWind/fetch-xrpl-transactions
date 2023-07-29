@@ -8,7 +8,12 @@ const {
 
 const XrplClient = require('xrpl-client').XrplClient
 const BigQuery = require('@google-cloud/bigquery')
+
 const bigquery = new BigQuery({ projectId: PROJECT_ID })
+
+const xrplRequestOptions = {
+  timeoutSeconds: 10,
+}
 
 let Stopped = false
 
@@ -39,7 +44,7 @@ async function fetchLedgerTransactions(client, ledgerIndex) {
     ledger_index: ledgerIndex,
     transactions: true,
     expand: false,
-  })
+  }, xrplRequestOptions)
 
   if (typeof result.ledger.transactions === 'undefined' || result.ledger.transactions.length === 0) {
     return { ledger_index: ledgerIndex, transactions: [] }
@@ -51,7 +56,7 @@ async function fetchLedgerTransactions(client, ledgerIndex) {
       ledger_index: ledgerIndex,
       transactions: true,
       expand: true,
-    }, 10)
+    }, xrplRequestOptions)
     return { ledger_index: ledgerIndex, transactions: txResults.ledger.transactions }
   }
 
@@ -60,7 +65,7 @@ async function fetchLedgerTransactions(client, ledgerIndex) {
     return client.send({
       command: 'tx',
       transaction: tx,
-    }, 10)
+    }, xrplRequestOptions)
   })
   const txResults = (await Promise.all(txPromises)).filter((tx) => {
     return typeof tx.error === 'undefined' && typeof tx.meta !== 'undefined' && typeof tx.meta.TransactionResult !== 'undefined'
