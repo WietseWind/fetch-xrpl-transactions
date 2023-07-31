@@ -1,11 +1,11 @@
 const { TaskRunner } = require('./taskRunner')
 const {
-  ledgerInfoProcess: process,
-  ledgerGetLastDBLedger: getLastDBLedger,
+  process: ledgerInfoProcess,
+  getLastDBLedger: ledgerGetLastDBLedger,
 } = require('./ledgerInfo')
 const {
-  transactionInfoProcess: process,
-  transactionGetLastDBLedger: getLastDBLedger,
+  process: transactionInfoProcess,
+  getLastDBLedger: transactionGetLastDBLedger,
 } = require('./transactionInfo')
 
 module.exports = {

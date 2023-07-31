@@ -38,15 +38,15 @@ function getModeDetails() {
   const mode = process.env.MODE?.trim()
   if (mode === 'ledgers') {
     return {
-      processFunc: ledgerProcess,
-      lastDBLedgerFunc = ledgerLastDBLedger,
+      processFunc: ledgerInfoProcess,
+      lastDBLedgerFunc: ledgerGetLastDBLedger,
       message: 'Fetch XRPL Ledger Info into Google BigQuery',
     }
   }
   if (mode === 'transactions') {
     return {
-      processFunc: transactionProcess,
-      lastDBLedgerFunc = transactionLastDBLedger,
+      processFunc: transactionInfoProcess,
+      lastDBLedgerFunc: transactionGetLastDBLedger,
       message: 'Fetch XRPL transactions into Google BigQuery',
     }
   }
@@ -90,12 +90,12 @@ async function main() {
   const client = new XrplClient(xrplNodeUrl)
   await client.ready()
   console.log('Connected to the XRPL')
-  const clientSender = async function (args) => {
+  const clientSender = async (args) => {
     return await client.send(args, XrplRequestOptions)
   }
 
   // main loop
-  const task = async function () => {
+  const task = async () => {
     lastLedger = await modeDetails.processFunc({
       clientSender,
       lastLedger,

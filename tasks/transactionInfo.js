@@ -60,7 +60,7 @@ async function insertIntoDB(txs, bigquery, dbDetails) {
   }
 }
 
-function formatTxForDB(tx) {
+function formatTxForDB(tx, bigquery) {
   const _Tx = {}
 
   // Auto mapping for 1:1 fields (non RECORD)
@@ -168,7 +168,7 @@ async function process(args) {
   }
 
   const txs = ledgerResult.transactions.map((tx) => {
-    return Object.assign(formatTxForDB(tx), {
+    return Object.assign(formatTxForDB(tx, bigquery), {
       LedgerIndex: ledgerResult.ledger_index,
     })
   })

@@ -49,9 +49,9 @@ async function process(args) {
   } = args
   const ledgerResult = await fetchLedger(clientSender, lastLedger + 1)
   await insertDBLedger(ledgerResult, bigquery, dbDetails)
-  lastLedger = ledgerResult.ledger_index
-  console.log(`${lastLedger} inserted`)
-  return lastLedger
+  const resultLastLedger = ledgerResult.ledger_index
+  console.log(`${resultLastLedger} inserted`)
+  return resultLastLedger
 }
 
 async function getLastDBLedger(args) {
