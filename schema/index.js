@@ -1,10 +1,4 @@
 const {
-  PROJECT_ID,
-  DATASET_NAME,
-  TRANSACTION_TABLE_NAME,
-  LEDGER_TABLE_NAME,
-} = require('./CONSTANTS')
-const {
   transactionSchema,
   CurrencyFields,
 } = require('./transactions')
