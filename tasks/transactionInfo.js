@@ -45,7 +45,7 @@ async function fetchLedgerTransactions(clientSender, ledgerIndex) {
 
 async function insertIntoDB(txs, bigquery, dbDetails) {
   try {
-    return await bigquery.dataset(dbDetails.datasetName).table(dbDetails.tableName).insert(txs)
+    await bigquery.dataset(dbDetails.datasetName).table(dbDetails.tableName).insert(txs)
   } catch(err) {
     if (err && err.name === 'PartialFailureError') {
       if (err.errors && err.errors.length > 0) {
@@ -171,7 +171,7 @@ async function process(args) {
     })
   })
 
-  const bqResult = await insertIntoDB(txs, bigquery, dbDetails)
+  await insertIntoDB(txs, bigquery, dbDetails)
   console.log(`${ledgerResult.ledger_index}: inserted ${txCount} transactions`)
   return ledgerResult.ledger_index
 }
