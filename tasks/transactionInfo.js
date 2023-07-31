@@ -158,9 +158,9 @@ async function process(args) {
   } = args
   const ledgerResult = await fetchLedgerTransactions(clientSender, lastLedger + 1)
   const txCount = ledgerResult.transactions.length
-  console.log(`${txCount > 0 ? 'Transactions in' : ' '.repeat(15)} ${ledgerResult.ledger_index}: `, txCount > 0 ? txCount : '-')
 
   if (txCount === 0) {
+    console.log(`${ledgerResult.ledger_index}: no transactions to insert`)
     return ledgerResult.ledger_index
   }
 
@@ -172,7 +172,7 @@ async function process(args) {
   })
 
   const bqResult = await insertIntoDB(txs, bigquery, dbDetails)
-  console.log(`Inserted rows`, bqResult)
+  console.log(`${ledgerResult.ledger_index}: inserted ${txCount} transactions`)
   return ledgerResult.ledger_index
 }
 
