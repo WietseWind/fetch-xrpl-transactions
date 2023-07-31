@@ -60,7 +60,7 @@ async function insertIntoDB(txs, bigquery, dbDetails) {
   }
 }
 
-function formatTxForDB(tx, bigquery) {
+function formatTxForDB(tx) {
   const _Tx = {}
 
   // Auto mapping for 1:1 fields (non RECORD)
@@ -145,9 +145,6 @@ function formatTxForDB(tx, bigquery) {
       })
     }
   })
-
-  // Special handling for timestamps
-  _Tx._InsertedAt = bigquery.timestamp(new Date())
   
   return _Tx
 }
@@ -168,8 +165,9 @@ async function process(args) {
   }
 
   const txs = ledgerResult.transactions.map((tx) => {
-    return Object.assign(formatTxForDB(tx, bigquery), {
+    return Object.assign(formatTxForDB(tx), {
       LedgerIndex: ledgerResult.ledger_index,
+      _InsertedAt: bigquery.timestamp(new Date()),
     })
   })
 
