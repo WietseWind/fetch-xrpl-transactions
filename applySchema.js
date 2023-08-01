@@ -13,12 +13,14 @@ async function createTable(name, schema, bigquery, dataset) {
 async function deleteTable(name, bigquery, dataset) {
   try {
     await bigquery.dataset(dataset).table(name).delete()
+    console.log(` -- BigQuery Table ${name} removed`)
   } catch(e) {
-    if (e.errors[0].reason !== 'notFound') {
+    if (e.errors[0].reason === 'notFound') {
+      console.log(` Table ${name} doesn't yet exist - nothing to delete`)
+    } else {
       throw e
     }
   }
-  console.log(` -- BigQuery Table ${name} removed`)
 }
 
 async function recreateTable(name, schema, bigquery, dataset) {
