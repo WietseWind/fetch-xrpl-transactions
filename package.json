@@ -1,6 +1,6 @@
 {
   "name": "fetch-xrpl-transactions",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "Fetch XRPL transactions and store in Google BigQuery",
   "main": "./index.js",
   "repository": {

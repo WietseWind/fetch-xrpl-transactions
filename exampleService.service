@@ -1,0 +1,13 @@
+[Unit]
+Description=Transaction ETL
+
+[Service]
+Environment=GOOGLE_APPLICATION_CREDENTIALS=/home/myuser/secret.json NODE=wss://s1.ripple.com:51233 LEDGER=75443456 PROJECT_ID=my-project DATASET_NAME=my_dataset TABLE_NAME=transactions MODE=transactions
+ExecStart=/usr/bin/node /path/to/this/repo/index.js
+TimeoutStopSec=60
+KillSignal=SIGTERM
+RestartSec=4320
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

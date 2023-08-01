@@ -59,7 +59,11 @@ export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/[FILE_NAME].json"
 More information:
 https://cloud.google.com/docs/authentication/getting-started
 
-> Now modify `schema/CONSTANTS.js` to point to your own projectId, dataset and table names.
+Set the following env variables:
+- `PROJECT_ID`: the BigQuery project ID to use
+- `DATASET_NAME`: the BigQuery dataset to use
+- `TRANSACTION_TABLE_NAME`: the BigQuery table to write to for transactions
+- `LEDGER_TABLE_NAME`: the BigQuery table to write to for ledgers
 
 # Create schema
 
@@ -73,3 +77,11 @@ You can invoke the script from a node enabled environment by setting these envir
 
 - `NODE`: the rippled node (`wss://...`) to connect to, default: **wss://s2.ripple.com**
 - `LEDGER`: the ledger index to start fetching transactions from, default: **32570**
+- `PROJECT_ID`: the BigQuery project ID to use
+- `DATASET_NAME`: the BigQuery dataset to use
+- `MODE`: `transactions` will insert transaction data, `ledgers` will insert ledger data
+- `TABLE_NAME`: the BigQuery table to write to
+
+## systemd integration
+
+Use the `exampleService.servie` file as a template for writing a Linux `systemd` service.

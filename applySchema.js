@@ -1,55 +1,58 @@
 const {
-  PROJECT_ID,
-  DATASET_NAME,
-  TRANSACTION_TABLE_NAME,
-  LEDGER_TABLE_NAME,
   transactionSchema,
   ledgerSchema,
 } = require('./schema')
 
 const BigQuery = require('@google-cloud/bigquery')
-const bigquery = new BigQuery({ projectId: PROJECT_ID })
 
-const createTable = async (name, schema) => {
-  return new Promise((resolve, reject) => {
-    bigquery.dataset(DATASET_NAME).createTable(name, { schema: schema })
-      .then(r => {
-        console.log(` -- BigQuery Table ${r[0].id} created`)
-        resolve()
-      })
-      .catch(e => {
-        reject(e)
-      })
-  })
+async function createTable(name, schema, bigquery, dataset) {
+  const result = await bigquery.dataset(dataset).createTable(name, { schema })
+  console.log(` -- BigQuery Table ${result[0].id} created`)
 }
 
-const deleteTable = async (name) => {
-  return new Promise((resolve, reject) => {
-    bigquery.dataset(DATASET_NAME).table(name).delete().then(() => {
-      console.log(` -- BigQuery Table ${name} removed`)
-      resolve()
-    }).catch(e => {
-      if (e.errors[0].reason === 'notFound') {
-        resolve()
-      } else{
-        reject(e)
-      }
-    })
-  })
+async function deleteTable(name, bigquery, dataset) {
+  try {
+    await bigquery.dataset(dataset).table(name).delete()
+    console.log(` -- BigQuery Table ${name} removed`)
+  } catch(e) {
+    if (e.errors[0].reason === 'notFound') {
+      console.log(` Table ${name} doesn't yet exist - nothing to delete`)
+    } else {
+      throw e
+    }
+  }
 }
 
-const recreateTable = async (name, schema) => {
-  console.log(`Dropping and creating table [ ${name} ] in dataset [ ${DATASET_NAME} ] @ Google BigQuery`)
-
-  await deleteTable(name)
-  await createTable(name, schema)
+async function recreateTable(name, schema, bigquery, dataset) {
+  console.log(`Dropping and creating table [ ${name} ] in dataset [ ${dataset} ] @ Google BigQuery`)
+  await deleteTable(name, bigquery, dataset)
+  await createTable(name, schema, bigquery, dataset)
 }
 
-(async () => {
+async function main() {
+  const dbDetails = {
+    projectID: process.env.PROJECT_ID?.trim(),
+    datasetName: process.env.DATASET_NAME?.trim(),
+    txTableName: process.env.TRANSACTION_TABLE_NAME?.trim(),
+    ledgerTableName: process.env.LEDGER_TABLE_NAME?.trim(),
+  }
+
+  const hasInvalidValue = Object.values(dbDetails).find((value) => {
+    return typeof value !== 'string' || value.length === 0
+  }) !== undefined
+  if (hasInvalidValue) {
+    console.error('Invalid db args')
+    process.exit(1)
+  }
+
+  const bigquery = new BigQuery({ projectId: dbDetails.projectID })
+
   await Promise.all([
-    recreateTable(TRANSACTION_TABLE_NAME, transactionSchema),
-    recreateTable(LEDGER_TABLE_NAME, ledgerSchema),
+    recreateTable(dbDetails.txTableName, transactionSchema, bigquery, dbDetails.datasetName),
+    recreateTable(dbDetails.ledgerTableName, ledgerSchema, bigquery, dbDetails.datasetName),
   ])
-
   console.log(`Done\n`)
-})()
+  process.exit(0)
+}
+
+main().then()
