@@ -99,7 +99,7 @@ function formatTxForDB(tx) {
     tx.metaData.DeliveredAmount = tx.metaData.delivered_amount
   }
   if (typeof tx.metaData.DeliveredAmount !== 'undefined') {
-    let DeliveredAmount = parseInt(tx.metaData.DeliveredAmount)
+    const DeliveredAmount = parseInt(tx.metaData.DeliveredAmount)
     if (!isNaN(DeliveredAmount)) {
       Object.assign(_Tx, {
         DeliveredAmount: DeliveredAmount
@@ -110,7 +110,7 @@ function formatTxForDB(tx) {
   if (typeof tx.Memos !== 'undefined') {
     Object.assign(_Tx, {
       Memos: tx.Memos.map(m => {
-        let n = { Memo: {} }
+        const n = { Memo: {} }
         if (typeof m.Memo !== 'undefined') {
           if (typeof m.Memo.MemoData !== 'undefined') n.Memo.MemoData = m.Memo.MemoData
           if (typeof m.Memo.MemoFormat !== 'undefined') n.Memo.MemoData = m.Memo.MemoFormat
